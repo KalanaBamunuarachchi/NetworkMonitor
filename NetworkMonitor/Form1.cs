@@ -15,13 +15,22 @@ namespace NetworkMonitor
         private long lastBytesSent = 0;
         private long[] bandwidthHistory = new long[60];
         private int historyIndex = 0;
-
-        
         private Label statLabel;
 
         
+        [DllImport("user32.dll")]
+        private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+        [DllImport("user32.dll")]
+        private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+       
         [DllImport("dwmapi")]
         private static extern int DwmEnableBlurBehindWindow(IntPtr hWnd, ref DwmBlurbehind pBlurBehind);
+
+        private const int HOTKEY_ID = 1;
+        private const uint MOD_ALT = 0x0001;
+        private const uint VK_N = 0x4E;
 
         public struct DwmBlurbehind
         {
@@ -35,31 +44,31 @@ namespace NetworkMonitor
         {
             InitializeComponent();
 
-           
+            
             statLabel = new Label();
             statLabel.Dock = DockStyle.Fill;
-            statLabel.TextAlign = ContentAlignment.TopLeft; 
+            statLabel.TextAlign = ContentAlignment.TopLeft;
             statLabel.Font = new Font("Inter", 8, FontStyle.Bold);
             statLabel.ForeColor = Color.White;
             statLabel.Margin = new Padding(0);
-            statLabel.Padding = new Padding(5); 
+            statLabel.Padding = new Padding(5);
             statLabel.AutoSize = false;
             statLabel.Height = this.ClientSize.Height;
-
             this.Controls.Add(statLabel);
+
 
             
             trayIcon = new NotifyIcon
             {
-                Icon = new Icon("Resources/NetIcon.ico"),
+                Icon = new Icon("NetIcon.ico"),
                 Visible = true
             };
-
             trayIcon.MouseClick += TrayIcon_MouseClick;
 
             ContextMenuStrip menu = new ContextMenuStrip();
             menu.Items.Add("Exit", null, (s, e) => ExitApplication());
             trayIcon.ContextMenuStrip = menu;
+
 
             updateTimer = new System.Windows.Forms.Timer();
             updateTimer.Interval = 1000;
@@ -72,39 +81,29 @@ namespace NetworkMonitor
             this.BackColor = Color.Black;
             this.Opacity = 0.85;
             this.ClientSize = new Size(80, 80);
-
             this.ShowInTaskbar = false;
             this.TopMost = true;
-
-
 
             GetActiveNetworkInterface();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            
             var dbb = new DwmBlurbehind { FEnable = true, DwFlags = 1, HRgnBlur = IntPtr.Zero, FTransitionOnMaximized = false };
             DwmEnableBlurBehindWindow(Handle, ref dbb);
+
+            
+            RegisterHotKey(this.Handle, HOTKEY_ID, MOD_ALT, VK_N);
         }
 
         private void TrayIcon_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
-                Screen screen = Screen.PrimaryScreen;
-                Rectangle workingArea = screen.WorkingArea;
-                Rectangle screenBounds = screen.Bounds;
-
-                int taskbarHeight = screenBounds.Height - workingArea.Height;
-                int flyoutX = Cursor.Position.X - Width / 2;
-                int flyoutY = workingArea.Bottom - Height; 
-
-                this.Location = new Point(flyoutX, flyoutY);
+                this.Location = new Point(0); 
                 this.Visible = !this.Visible;
             }
         }
-
 
         private void UpdateNetworkStats()
         {
@@ -117,7 +116,6 @@ namespace NetworkMonitor
             long bytesReceived = activeInterface.GetIPv4Statistics().BytesReceived;
             long bytesSent = activeInterface.GetIPv4Statistics().BytesSent;
 
-           
             double downloadSpeedKbps = (bytesReceived - lastBytesReceived) * 8.0 / 1024.0;
             double uploadSpeedKbps = (bytesSent - lastBytesSent) * 8.0 / 1024.0;
             int pingMs = GetPing();
@@ -175,10 +173,21 @@ namespace NetworkMonitor
             return diff;
         }
 
+        protected override void WndProc(ref Message m)
+        {
+            const int WM_HOTKEY = 0x0312;
+            if (m.Msg == WM_HOTKEY && m.WParam.ToInt32() == HOTKEY_ID)
+            {
+                this.Visible = !this.Visible;
+            }
+            base.WndProc(ref m);
+        }
+
         private void ExitApplication()
         {
             updateTimer.Stop();
             trayIcon.Dispose();
+            UnregisterHotKey(this.Handle, HOTKEY_ID);
             Application.Exit();
         }
     }

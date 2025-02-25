@@ -6,17 +6,19 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+	<PublishSingleFile>true</PublishSingleFile>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Resources\NetIcon.ico" />
-  </ItemGroup>
+
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\NetIcon.ico">
+    <EmbeddedResource Include="NetIcon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
+
+	
 
  
 
