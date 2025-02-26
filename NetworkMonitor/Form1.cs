@@ -13,7 +13,7 @@ namespace NetworkMonitor
         private NetworkInterface activeInterface;
         private long lastBytesReceived = 0;
         private long lastBytesSent = 0;
-        private long[] bandwidthHistory = new long[60];
+        private long[] bandwidthHistory = new long[3600]; 
         private int historyIndex = 0;
         private Label statLabel;
 
@@ -132,7 +132,19 @@ namespace NetworkMonitor
             lastBytesReceived = bytesReceived;
             lastBytesSent = bytesSent;
 
-            string stats = $"{downloadSpeedText}\n{uploadSpeedText}\nPing: {pingMs} ms\nUsage: {totalUsageLastHour / 1024.0 / 1024.0:F2} MB";
+            string usageText;
+            double usageMB = totalUsageLastHour / 1024.0 / 1024.0;
+
+            if (usageMB >= 1024)
+            {
+                usageText = $"{usageMB / 1024.0:F2} GB"; 
+            }
+            else
+            {
+                usageText = $"{usageMB:F2} MB"; 
+            }
+
+            string stats = $"{downloadSpeedText}\n{uploadSpeedText}\nPing: {pingMs} ms\nUsage: {usageText}";
             statLabel.Text = stats;
             this.Refresh();
         }
@@ -164,14 +176,35 @@ namespace NetworkMonitor
             }
         }
 
+        
+
         private long GetBandwidthUsageLastHour(long currentReceived, long currentSent)
         {
             long totalUsed = currentReceived + currentSent;
-            long diff = totalUsed - (bandwidthHistory[historyIndex] > 0 ? bandwidthHistory[historyIndex] : totalUsed);
-            bandwidthHistory[historyIndex] = totalUsed;
-            historyIndex = (historyIndex + 1) % 60;
-            return diff;
+
+            
+            long currentUsage = totalUsed - lastBytesReceived - lastBytesSent;
+            if (currentUsage < 0) currentUsage = 0; 
+
+            
+            bandwidthHistory[historyIndex] = currentUsage;
+
+            
+            historyIndex = (historyIndex + 1) % 3600;
+
+            
+            long totalUsageLastHour = 0;
+            foreach (long usage in bandwidthHistory)
+            {
+                totalUsageLastHour += usage;
+            }
+
+            lastBytesReceived = currentReceived;
+            lastBytesSent = currentSent;
+
+            return totalUsageLastHour;
         }
+
 
         protected override void WndProc(ref Message m)
         {
