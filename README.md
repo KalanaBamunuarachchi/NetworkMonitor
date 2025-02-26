@@ -1,6 +1,6 @@
 # Windows Taskbar Network Speed Monitor
 
-A lightweight system tray application for Windows that monitors network speed (download/upload), ping, and bandwidth usage. Displays real-time stats in a modern, translucent flyout above the taskbar when clicked. Ideal for gamers and power users.
+A lightweight system tray application for Windows that monitors network speed (download/upload), ping, and bandwidth usage. Displays real-time stats in a modern, translucent overlay. Ideal for gamers and power users.
 
 ## Latest Release  
 
@@ -11,7 +11,6 @@ A lightweight system tray application for Windows that monitors network speed (d
 - Ping measurement for real-time latency tracking
 - Bandwidth usage summary (last hour)
 - Minimalist system tray integration
-- Sleek, glass-effect flyout UI
 - Toggle overlay visibility with the shortcut **Alt + N**
 
 ## Built With
