@@ -18,3 +18,5 @@ A lightweight system tray application for Windows that monitors network speed (d
 
 ## Compatibility
 - Windows 10/11
+
+[![Network-Monitor-Overlay](https://i.postimg.cc/QMFXGy4Q/Network-Monitor-Overlay.jpg)](https://postimg.cc/cKNqfXNC)
