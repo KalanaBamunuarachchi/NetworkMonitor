@@ -110,6 +110,7 @@ namespace NetworkMonitor
             if (activeInterface == null)
             {
                 statLabel.Text = "No Active Network";
+                trayIcon.Text = "No Active Network";
                 return;
             }
 
@@ -137,17 +138,26 @@ namespace NetworkMonitor
 
             if (usageMB >= 1024)
             {
-                usageText = $"{usageMB / 1024.0:F2} GB"; 
+                usageText = $"{usageMB / 1024.0:F2} GB";
             }
             else
             {
-                usageText = $"{usageMB:F2} MB"; 
+                usageText = $"{usageMB:F2} MB";
             }
 
+            
             string stats = $"{downloadSpeedText}\n{uploadSpeedText}\nPing: {pingMs} ms\nUsage: {usageText}";
             statLabel.Text = stats;
             this.Refresh();
+
+
+            string tooltip = $" {downloadSpeedText}\n {uploadSpeedText}\nPing: {pingMs}ms";
+            if (tooltip.Length > 63)
+                tooltip = tooltip.Substring(0, 63);
+
+            trayIcon.Text = tooltip;
         }
+
 
         private void GetActiveNetworkInterface()
         {
