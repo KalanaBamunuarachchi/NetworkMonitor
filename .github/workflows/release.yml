@@ -1,0 +1,42 @@
+name: Build and Release NetworkMonitor
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Publish self-contained build
+      run: dotnet publish NetworkMonitor/NetworkMonitor.csproj -c Release -r win-x64 --self-contained true -o publish
+
+    - name: Zip portable build
+      run: Compress-Archive -Path publish\* -DestinationPath NetworkMonitor.zip
+      shell: pwsh
+
+    - name: Install Inno Setup
+      run: choco install innosetup --yes
+      shell: powershell
+
+    - name: Build Installer with Inno Setup
+      run: iscc NetworkMonitor/InstallerScript.iss
+
+    - name: Upload files to GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          NetworkMonitor.zip
+          NetworkMonitor/Output/NetworkMonitorSetup.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
