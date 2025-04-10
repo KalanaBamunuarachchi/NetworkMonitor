@@ -22,7 +22,7 @@ jobs:
       run: dotnet publish NetworkMonitor/NetworkMonitor.csproj -c Release -r win-x64 --self-contained true -o publish
 
     - name: Zip portable build
-      run: Compress-Archive -Path publish\* -DestinationPath NetworkMonitor.zip
+      run: Compress-Archive -Path NetworkMonitor/publish/* -DestinationPath NetworkMonitor.zip
       shell: pwsh
 
     - name: Install Inno Setup
@@ -37,6 +37,6 @@ jobs:
       with:
         files: |
           NetworkMonitor.zip
-          NetworkMonitor/Output/NetworkMonitorSetup.exe
+          NetworkMonitor/output/NetworkMonitorSetup.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
